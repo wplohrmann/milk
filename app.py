@@ -31,7 +31,8 @@ st.set_page_config(page_title="Milk Tracker", page_icon="🥛", layout="wide")
 st.title("Milk Tracker")
 
 with st.sidebar:
-    enter_milk()
+    if st.text_input("Password", type="password") == st.secrets["SECRET_PASSWORD"]:
+        enter_milk()
 milks = get_milks(datetime.now() - timedelta(days=7))
 
 def format_time(num_seconds: float) -> str:
