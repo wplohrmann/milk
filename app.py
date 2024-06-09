@@ -90,4 +90,5 @@ with columns[1]:
     plt.xticks(rotation=45)
     plt.xlabel("Date")
     plt.ylabel("Cumulative milk consumption (L)")
+    plt.legend()
     st.write(fig)
