@@ -4,6 +4,7 @@ from google.cloud import firestore
 from typing import List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
 from datetime import timezone
@@ -78,17 +79,29 @@ with columns[0]:
 
 with columns[1]:
     st.header("Milk consumption in the last month")
-    x = [x[0] for x in milks]
-    x.insert(0, t0)
-    y_l = np.cumsum([x[1] if x[1] else 0 for x in milks]) / 1000
-    y_l = np.insert(y_l, 0, 0)
-    y_glasses = np.cumsum([1 for x in milks])
-    y_glasses = np.insert(y_glasses, 0, 0)
-    fig = plt.figure()
-    plt.plot(x, y_l, "-o", label="Litres consumed")
-    plt.plot(x, y_glasses, "-o", label="Glasses consumed")
+    x = [t0]
+    y_l = [0]
+    y_glasses = [0]
+    for milk in milks:
+        x.append(milk[0] - timedelta(seconds=1))
+        x.append(milk[0])
+        y_l.append(y_l[-1])
+        y_l.append(y_l[-1] + (milk[1] / 1000 if milk[1] is not None else 0))
+        y_glasses.append(y_glasses[-1])
+        y_glasses.append(y_glasses[-1] + 1)
+
+    fig, axes = plt.subplots(2, 1, sharex=True)
+    axes[0].plot(x, y_glasses, label="Glasses consumed")
+    axes[1].plot(x, y_l, label="Litres consumed")
+    axes[0].set_xlabel("Date")
+    axes[0].set_ylabel("Glasses consumed")
+    axes[1].set_ylabel("Litres consumed")
     plt.xticks(rotation=45)
-    plt.xlabel("Date")
-    plt.ylabel("Cumulative milk consumption (L)")
+    axes[0].legend()
+    axes[1].legend()
     plt.legend()
     st.write(fig)
+
+milk_df = pd.DataFrame([{"Datetime": x[0], "Amount (if carton finished) / mL": x[1] or ""} for x in milks])
+st.subheader("Raw milk data (No UHT)")
+st.dataframe(milk_df, use_container_width=True, hide_index=True)

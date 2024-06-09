@@ -3,3 +3,4 @@ numpy
 matplotlib
 google-cloud-firestore
 arrow
+pandas
