@@ -27,7 +27,7 @@ def enter_milk():
     print((date_milk_was_drunk, carton_finished, ml_in_carton))
 
 
-st.set_page_config(page_title="Milk Tracker", page_icon="🥛", layout="wide")
+st.set_page_config(page_title="Milk Tracker", page_icon="🥛", layout="wide", initial_sidebar_state="collapsed")
 st.title("Milk Tracker")
 
 with st.sidebar:
