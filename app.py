@@ -29,7 +29,7 @@ def get_milks(dt: datetime) -> List[Tuple[datetime, Optional[int]]]:
 def enter_milk():
     date_milk_was_drunk = st.date_input("Date milk was drunk")
     time_milk_was_drunk = st.time_input("Time milk was drunk")
-    datetime_milk_was_drunk = datetime.combine(date_milk_was_drunk, time_milk_was_drunk, tzinfo=arrow.now().tzinfo)
+    datetime_milk_was_drunk = datetime.combine(date_milk_was_drunk, time_milk_was_drunk, tzinfo=arrow.tzinfo("Europe/London"))
 
     carton_finished = st.checkbox("Carton finished?")
     if carton_finished:
