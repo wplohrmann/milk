@@ -41,7 +41,7 @@ def enter_milk():
     if st.button("Submit"):
         client = get_firestore_client()
         client.collection('milks').add({
-            "datetime": datetime_milk_was_drunk,
+            "datetime": datetime_milk_was_drunk.timestamp(),
             "ml_in_carton": ml_in_carton
         })
         st.write("Submitted!")
