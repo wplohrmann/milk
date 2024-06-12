@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pytz
 import streamlit as st
 from datetime import datetime, timedelta, tzinfo
 from datetime import timezone
@@ -28,8 +29,9 @@ def get_milks(dt: datetime) -> List[Tuple[datetime, Optional[int]]]:
 
 def enter_milk():
     date_milk_was_drunk = st.date_input("Date milk was drunk")
-    time_milk_was_drunk = st.time_input("Time milk was drunk", value=arrow.now(tz="Europe/London").time())
-    datetime_milk_was_drunk = datetime.combine(date_milk_was_drunk, time_milk_was_drunk, tzinfo=tzinfo("Europe/London"))
+    time_milk_was_drunk = st.time_input("Time milk was drunk", key="time_milk_was_drunk")
+    tz = pytz.timezone("Europe/London")
+    datetime_milk_was_drunk = datetime.combine(date_milk_was_drunk, time_milk_was_drunk, tzinfo=tz)
 
     carton_finished = st.checkbox("Carton finished?")
     if carton_finished:
@@ -41,7 +43,7 @@ def enter_milk():
     if st.button("Submit"):
         client = get_firestore_client()
         client.collection('milks').add({
-            "datetime": datetime_milk_was_drunk.timestamp(),
+            "datetime": datetime_milk_was_drunk,
             "ml_in_carton": ml_in_carton
         })
         st.write("Submitted!")
