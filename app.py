@@ -11,6 +11,8 @@ from datetime import datetime, timedelta, tzinfo
 from datetime import timezone
 import arrow
 
+london = pytz.timezone("Europe/London")
+
 @st.cache_resource
 def get_firestore_client():
     service_account = json.loads(st.secrets["SERVICE_ACCOUNT"])
@@ -29,16 +31,19 @@ def get_milks(dt: datetime) -> List[Tuple[datetime, Optional[int]]]:
 
 def enter_milk():
     date_milk_was_drunk = st.date_input("Date milk was drunk")
-    time_milk_was_drunk = st.time_input("Time milk was drunk", key="time_milk_was_drunk")
-    tz = pytz.timezone("Europe/London")
-    datetime_milk_was_drunk = datetime.combine(date_milk_was_drunk, time_milk_was_drunk, tzinfo=tz)
+    time_input = st.text_input("Time milk was drunk", value=arrow.now(london).format("HH:mm"))
+    try:
+        time_milk_was_drunk = datetime.strptime(time_input, "%H:%M").time()
+    except:
+        st.write("Invalid time format. Please use HH:MM")
+        return
+    datetime_milk_was_drunk = datetime.combine(date_milk_was_drunk, time_milk_was_drunk).astimezone(london)
 
     carton_finished = st.checkbox("Carton finished?")
     if carton_finished:
         ml_in_carton = st.number_input("Amount of milk in carton (mL)", value=1000)
     else:
         ml_in_carton = None
-
 
     if st.button("Submit"):
         client = get_firestore_client()
@@ -104,6 +109,6 @@ with columns[1]:
     plt.legend()
     st.write(fig)
 
-milk_df = pd.DataFrame([{"Datetime": x[0], "Amount (if carton finished) / mL": x[1] or ""} for x in milks])
+milk_df = pd.DataFrame([{"Datetime": x[0].astimezone(london), "Amount (if carton finished) / mL": x[1] or ""} for x in milks])
 st.subheader("Raw milk data (No UHT)")
 st.dataframe(milk_df, use_container_width=True, hide_index=True)
