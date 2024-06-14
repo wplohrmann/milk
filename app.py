@@ -20,6 +20,7 @@ def get_firestore_client():
 
 
  # List of tuples (datetime, amount_in_ml_finished) where `amount_in_ml_finished` is not None if the carton was finished
+@st.cache_data(ttl=60 * 30)
 def get_milks(dt: datetime) -> List[Tuple[datetime, Optional[int]]]:
     client = get_firestore_client()
     documents = client.collection('milks').where('datetime', '>', dt).get()
@@ -51,6 +52,7 @@ def enter_milk():
             "datetime": datetime_milk_was_drunk,
             "ml_in_carton": ml_in_carton
         })
+        get_milks.clear()
         st.write("Submitted!")
 
 
@@ -109,6 +111,6 @@ with columns[1]:
     plt.legend()
     st.write(fig)
 
-milk_df = pd.DataFrame([{"Datetime": x[0].astimezone(london), "Amount (if carton finished) / mL": x[1] or ""} for x in milks])
+milk_df = pd.DataFrame([{"Datetime": x[0].astimezone(london).strftime("%Y-%m-%d %H:%M:%S"), "Amount (if carton finished) / mL": str(x[1]) or ""} for x in milks])
 st.subheader("Raw milk data (No UHT)")
 st.dataframe(milk_df, use_container_width=True, hide_index=True)
